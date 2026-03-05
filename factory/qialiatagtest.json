@@ -1,0 +1,17 @@
+{
+	"name": "qialiatagtest",
+	"properties": {
+		"globalParameters": {
+			"environment": {
+				"type": "string",
+				"value": "DEV"
+			}
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f142b6e3-219f-4096-ab40-6e50303ff193",
+		"tenantId": "16b3c013-d300-468d-ac64-7eda0820b6d3"
+	}
+}

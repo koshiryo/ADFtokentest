@@ -1,0 +1,49 @@
+{
+	"name": "tableA",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabaseqialia",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "qialiaSQL"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "resourceId",
+				"type": "varchar"
+			},
+			{
+				"name": "Csp",
+				"type": "varchar"
+			},
+			{
+				"name": "masterAccountId",
+				"type": "varchar"
+			},
+			{
+				"name": "accountId",
+				"type": "varchar"
+			},
+			{
+				"name": "collectionDate",
+				"type": "date"
+			},
+			{
+				"name": "region",
+				"type": "varchar"
+			},
+			{
+				"name": "status",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "tableA"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

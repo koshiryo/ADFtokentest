@@ -1,0 +1,10 @@
+{
+	"name": "AzureFileStoragefileshare",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/d3d5cfa2-3592-4936-9a07-a9ce840458b6/resourceGroups/qialia/providers/Microsoft.Storage/storageAccounts/qialiaadls",
+		"groupId": "file",
+		"fqdns": [
+			"qialiaadls.file.core.windows.net"
+		]
+	}
+}

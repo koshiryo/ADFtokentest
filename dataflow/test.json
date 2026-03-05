@@ -1,0 +1,134 @@
+{
+	"name": "test",
+	"properties": {
+		"folder": {
+			"name": "Governance-KPI"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "tableB",
+						"type": "DatasetReference"
+					},
+					"name": "tableB",
+					"description": "Inventory Details Table in Sink"
+				},
+				{
+					"dataset": {
+						"referenceName": "tableA",
+						"type": "DatasetReference"
+					},
+					"name": "tableA"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "tableC",
+						"type": "DatasetReference"
+					},
+					"name": "tableC",
+					"description": "The Inventory Details Table in Sink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "JoinForDateCheck"
+				},
+				{
+					"name": "DateCheckCondition",
+					"description": "Update data in sink only if data in source is of same or greater date than data in sink"
+				},
+				{
+					"name": "aggregateB"
+				},
+				{
+					"name": "aggregateA"
+				},
+				{
+					"name": "aggregateAfterJoin"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          resourceId as string,",
+				"          Csp as string,",
+				"          masterAccountId as string,",
+				"          accountId as string,",
+				"          collectionDate as date,",
+				"          datetest as string",
+				"     ),",
+				"     allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> tableB",
+				"source(output(",
+				"          resourceId as string,",
+				"          Csp as string,",
+				"          masterAccountId as string,",
+				"          accountId as string,",
+				"          collectionDate as date,",
+				"          region as string,",
+				"          status as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> tableA",
+				"aggregateA, tableB join(aggregateA@masterAccountId == tableB@masterAccountId",
+				"     && aggregateA@accountId == tableB@accountId",
+				"     && aggregateA@resourceId == tableB@resourceId",
+				"     && aggregateA@Csp == tableB@Csp",
+				"     && aggregateA@collectionDate < tableB@collectionDate,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'left')~> JoinForDateCheck",
+				"aggregateAfterJoin alterRow(updateIf(true())) ~> DateCheckCondition",
+				"tableB aggregate(groupBy(resourceId,",
+				"          Csp,",
+				"          masterAccountId,",
+				"          accountId,",
+				"          collectionDate),",
+				"     cntB = count(),",
+				"          nullsB = countIf(isNull(resourceId) || isNull(Csp) || isNull(masterAccountId) || isNull(accountId) || isNull(collectionDate)),",
+				"          trimDiffB = countIf(trim(resourceId) != resourceId || trim(Csp) != Csp)) ~> aggregateB",
+				"tableA aggregate(groupBy(Csp,",
+				"          resourceId,",
+				"          masterAccountId,",
+				"          accountId,",
+				"          collectionDate),",
+				"     cntA = count(),",
+				"          nullsA = countIf(isNull(resourceId) || isNull(Csp) || isNull(masterAccountId) || isNull(accountId) || isNull(collectionDate)),",
+				"          trimDiffA = countIf(trim(resourceId) != resourceId || trim(Csp) != Csp)) ~> aggregateA",
+				"JoinForDateCheck aggregate(totalRows = count()) ~> aggregateAfterJoin",
+				"DateCheckCondition sink(allowSchemaDrift: false,",
+				"     validateSchema: false,",
+				"     input(",
+				"          resourceId as string,",
+				"          Csp as string,",
+				"          masterAccountId as string,",
+				"          accountId as string,",
+				"          collectionDate as date,",
+				"          datetest as string,",
+				"          test as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:false,",
+				"     updateable:true,",
+				"     upsertable:false,",
+				"     keys:['test'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     outputAssertFailedRows: true,",
+				"     mapColumn(",
+				"          test = totalRows",
+				"     )) ~> tableC"
+			]
+		}
+	}
+}
